@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Orbis OS — SEBI Investment Adviser</title>
+<style>
+:root{--bg:#0c0e14;--s1:#13161f;--s2:#191d28;--s3:#1f2435;--bdr:#252b3b;--acc:#4f7ef8;--acc2:#7c6fef;--red:#e8534a;--amb:#e8a838;--grn:#34c47c;--txt:#dde3f0;--mut:#5a6380;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',system-ui,sans-serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:13px;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+/* TOPBAR */
+.topbar{height:50px;background:var(--s1);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;padding:0 20px;flex-shrink:0}
+.brand{font-family:var(--mono);font-size:14px;color:var(--acc);font-weight:500}
+.brand span{color:var(--mut)}
+.topbadge{background:rgba(79,126,248,.1);border:1px solid rgba(79,126,248,.25);color:var(--acc);font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:3px}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.live{width:6px;height:6px;border-radius:50%;background:var(--grn);box-shadow:0 0 5px var(--grn);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.clock{font-family:var(--mono);font-size:11px;color:var(--mut)}
+/* TABS */
+.tabs{display:flex;background:var(--s1);border-bottom:1px solid var(--bdr);flex-shrink:0}
+.tab{padding:10px 24px;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--mut);transition:all .15s;display:flex;align-items:center;gap:7px}
+.tab:hover{color:var(--txt)}
+.tab.active{color:var(--acc);border-bottom-color:var(--acc)}
+.tab-cnt{background:var(--s2);border-radius:10px;font-family:var(--mono);font-size:10px;padding:1px 6px;color:var(--mut)}
+.tab.active .tab-cnt{background:rgba(79,126,248,.15);color:var(--acc)}
+/* BODY */
+.body{flex:1;display:flex;overflow:hidden}
+/* SIDEBAR */
+.sidebar{width:200px;background:var(--s1);border-right:1px solid var(--bdr);overflow-y:auto;flex-shrink:0;padding:12px 0}
+.sl{font-family:var(--mono);font-size:9px;color:var(--mut);letter-spacing:1.5px;text-transform:uppercase;padding:8px 14px 4px}
+.si{display:flex;align-items:center;gap:6px;padding:6px 14px;cursor:pointer;color:var(--mut);font-size:12px;border-left:2px solid transparent;transition:all .12s}
+.si:hover{background:var(--s2);color:var(--txt)}
+.si.active{color:var(--acc);border-left-color:var(--acc);background:rgba(79,126,248,.06)}
+.si-c{margin-left:auto;font-family:var(--mono);font-size:10px;background:var(--s2);padding:1px 5px;border-radius:8px}
+.si.active .si-c{background:rgba(79,126,248,.15);color:var(--acc)}
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+/* STATS */
+.statsbar{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--bdr);border-bottom:1px solid var(--bdr);flex-shrink:0}
+.sc{background:var(--s1);padding:12px 16px}
+.sl2{font-family:var(--mono);font-size:9px;color:var(--mut);letter-spacing:.8px;margin-bottom:3px}
+.sv{font-size:24px;font-weight:600;font-family:var(--mono);line-height:1}
+.ss{font-size:10px;color:var(--mut);margin-top:1px}
+.ca{color:var(--acc)}.cr{color:var(--red)}.cg{color:var(--grn)}.cm{color:var(--amb)}.cx{color:var(--mut)}
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--bdr);background:var(--s1);flex-shrink:0;flex-wrap:wrap}
+.srch{background:var(--s2);border:1px solid var(--bdr);border-radius:5px;padding:6px 10px;color:var(--txt);font-family:var(--mono);font-size:11px;width:200px;outline:none}
+.srch:focus{border-color:var(--acc)}
+.srch::placeholder{color:var(--mut)}
+.fb{background:var(--s2);border:1px solid var(--bdr);border-radius:5px;padding:6px 10px;color:var(--mut);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .12s}
+.fb:hover{border-color:var(--acc);color:var(--txt)}
+.fb.on{border-color:var(--acc);background:rgba(79,126,248,.08);color:var(--acc)}
+.tr{margin-left:auto;display:flex;gap:8px;align-items:center}
+.rc{font-family:var(--mono);font-size:10px;color:var(--mut)}
+.expbtn{background:rgba(79,126,248,.08);border:1px solid rgba(79,126,248,.25);border-radius:5px;padding:6px 12px;color:var(--acc);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .12s}
+.expbtn:hover{background:rgba(79,126,248,.16)}
+/* TABLE */
+.twrap{flex:1;overflow-y:auto}
+table{width:100%;border-collapse:collapse}
+thead{position:sticky;top:0;z-index:5}
+th{background:var(--s2);border-bottom:1px solid var(--bdr);padding:8px 12px;text-align:left;font-family:var(--mono);font-size:9px;letter-spacing:.9px;color:var(--mut);text-transform:uppercase;white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid rgba(37,43,59,.5);vertical-align:top}
+tr:hover td{background:var(--s2)}
+tr.sel td{background:rgba(79,126,248,.05)}
+.idc{font-family:var(--mono);font-size:10px;color:var(--mut)}
+.src{font-family:var(--mono);font-size:9px;color:var(--mut);margin-top:2px}
+.oblc{max-width:300px;font-size:12px;line-height:1.5}
+.evhint{font-size:10px;color:var(--mut);margin-top:3px;line-height:1.4}
+.catb{display:inline-block;padding:2px 6px;border-radius:3px;font-size:9px;font-family:var(--mono);background:var(--s2);border:1px solid var(--bdr);color:var(--mut);white-space:nowrap}
+.freqb{font-family:var(--mono);font-size:10px;color:var(--mut);white-space:nowrap}
+.dlc{font-family:var(--mono);font-size:10px;color:var(--mut);max-width:140px;line-height:1.4}
+.expiry-warn{color:var(--amb);font-size:9px;font-family:var(--mono);margin-top:2px}
+/* BADGES */
+.b{display:inline-flex;align-items:center;padding:2px 6px;border-radius:3px;font-size:10px;font-family:var(--mono);white-space:nowrap;font-weight:500}
+.bh{background:rgba(232,83,74,.1);color:var(--red);border:1px solid rgba(232,83,74,.2)}
+.bm{background:rgba(232,168,56,.1);color:var(--amb);border:1px solid rgba(232,168,56,.2)}
+.bpend{background:rgba(232,168,56,.08);color:var(--amb);border:1px solid rgba(232,168,56,.18)}
+.bcomp{background:rgba(52,196,124,.08);color:var(--grn);border:1px solid rgba(52,196,124,.18)}
+.bgap{background:rgba(232,83,74,.08);color:var(--red);border:1px solid rgba(232,83,74,.18)}
+.brev{background:rgba(124,111,239,.08);color:var(--acc2);border:1px solid rgba(124,111,239,.18)}
+.bexp{background:rgba(232,83,74,.15);color:var(--red);border:1px solid rgba(232,83,74,.3);animation:pulse-exp 1.5s infinite}
+@keyframes pulse-exp{0%,100%{opacity:1}50%{opacity:.6}}
+/* STATUS BTN — no direct status change, must go via panel */
+.stbtn{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:3px;border:1px solid var(--bdr);background:var(--s2);color:var(--mut);cursor:pointer;transition:all .12s;white-space:nowrap}
+.stbtn:hover{border-color:var(--acc);color:var(--acc)}
+/* PANEL */
+.panel{width:340px;background:var(--s1);border-left:1px solid var(--bdr);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;transition:width .2s}
+.panel.hidden{width:0;overflow:hidden;border:none}
+.ph{padding:14px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ptitle{font-family:var(--mono);font-size:11px;color:var(--mut);flex:1}
+.pclose{background:none;border:none;color:var(--mut);cursor:pointer;font-size:14px;padding:2px 5px;border-radius:3px}
+.pclose:hover{background:var(--s2);color:var(--txt)}
+.pb{padding:16px;display:flex;flex-direction:column;gap:14px}
+.pf label{font-family:var(--mono);font-size:9px;color:var(--mut);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:4px}
+.pf p{font-size:12px;line-height:1.6;color:var(--txt)}
+.pdiv{height:1px;background:var(--bdr)}
+/* EVIDENCE FORM */
+.evform{display:flex;flex-direction:column;gap:6px}
+.evinput{background:var(--s2);border:1px solid var(--bdr);border-radius:4px;padding:7px 9px;color:var(--txt);font-family:var(--mono);font-size:11px;outline:none;width:100%}
+.evinput:focus{border-color:var(--acc)}
+.evinput::placeholder{color:var(--mut)}
+.evrow{display:flex;gap:6px}
+.evsubmit{flex:1;background:rgba(52,196,124,.1);border:1px solid rgba(52,196,124,.25);border-radius:4px;padding:7px;color:var(--grn);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .12s}
+.evsubmit:hover{background:rgba(52,196,124,.2)}
+.evgap{flex:1;background:rgba(232,83,74,.1);border:1px solid rgba(232,83,74,.25);border-radius:4px;padding:7px;color:var(--red);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .12s}
+.evgap:hover{background:rgba(232,83,74,.2)}
+.evlist{display:flex;flex-direction:column;gap:4px}
+.evitem{background:var(--s2);border-radius:4px;padding:8px 10px;font-size:11px;font-family:var(--mono)}
+.evitem-ref{color:var(--grn)}
+.evitem-time{color:var(--mut);font-size:9px;margin-top:2px}
+.gap-warn{background:rgba(232,83,74,.08);border:1px solid rgba(232,83,74,.18);border-radius:5px;padding:10px 12px;font-size:11px;color:var(--red);line-height:1.5}
+.exp-warn{background:rgba(232,168,56,.08);border:1px solid rgba(232,168,56,.18);border-radius:5px;padding:10px 12px;font-size:11px;color:var(--amb);line-height:1.5}
+/* AUDIT */
+.alog{display:flex;flex-direction:column;gap:6px}
+.aentry{background:var(--s2);border-radius:4px;padding:8px 10px}
+.atime{font-family:var(--mono);font-size:9px;color:var(--mut);margin-bottom:2px}
+.aact{font-size:11px;color:var(--txt)}
+/* PROGRESS */
+.pgwrap{background:var(--s2);border-radius:3px;height:5px;overflow:hidden}
+.pgfill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .4s}
+/* CLIENT TAB */
+.client-section{padding:12px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;background:var(--s1);flex-shrink:0}
+.client-select{background:var(--s2);border:1px solid var(--bdr);border-radius:5px;padding:6px 10px;color:var(--txt);font-family:var(--mono);font-size:11px;outline:none;cursor:pointer}
+.client-select:focus{border-color:var(--acc)}
+.addbtn{background:rgba(79,126,248,.08);border:1px solid rgba(79,126,248,.25);border-radius:5px;padding:6px 12px;color:var(--acc);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .12s}
+.addbtn:hover{background:rgba(79,126,248,.16)}
+.client-info{font-family:var(--mono);font-size:10px;color:var(--mut)}
+/* EMPTY */
+.empty{padding:50px 20px;text-align:center;color:var(--mut)}
+.empty-icon{font-size:32px;margin-bottom:10px}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">Orbis<span> OS</span></div>
+  <div class="topbadge">Orbis OS · SEBI · Investment Adviser · 150 Obligations</div>
+  <div class="top-right"><div class="live"></div><span class="clock" id="clk"></span></div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" id="tab-firm" onclick="switchTab('firm')">🏢 Firm-level <span class="tab-cnt" id="tc-firm">93</span></div>
+  <div class="tab" id="tab-client" onclick="switchTab('client')">👤 Client-level <span class="tab-cnt" id="tc-client">57</span></div>
+</div>
+
+<div class="body">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar"></div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- STATS -->
+    <div class="statsbar">
+      <div class="sc"><div class="sl2">SCOPE</div><div class="sv ca" id="s-scope">93</div><div class="ss" id="s-scope-lbl">firm obligations</div></div>
+      <div class="sc"><div class="sl2">GAPS</div><div class="sv cr" id="s-gap">0</div><div class="ss">need action</div></div>
+      <div class="sc"><div class="sl2">COMPLIANT</div><div class="sv cg" id="s-comp">0</div><div class="ss">evidenced</div></div>
+      <div class="sc"><div class="sl2">PENDING</div><div class="sv cm" id="s-pend">93</div><div class="ss">to review</div></div>
+      <div class="sc"><div class="sl2">PROGRESS</div><div class="sv cx" id="s-pct">0%</div><div class="pgwrap" style="margin-top:5px"><div class="pgfill" id="s-bar" style="width:0%"></div></div></div>
+    </div>
+
+    <!-- CLIENT SELECTOR (only visible on client tab) -->
+    <div class="client-section" id="client-section" style="display:none">
+      <span style="font-size:12px;color:var(--mut)">Client:</span>
+      <select class="client-select" id="client-select" onchange="selectClient(this.value)">
+        <option value="">— select a client —</option>
+      </select>
+      <button class="addbtn" onclick="addClient()">+ Add Client</button>
+      <span class="client-info" id="client-info"></span>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <input class="srch" placeholder="Search obligations…" oninput="onSearch(this.value)" id="srch"/>
+      <button class="fb" id="f-high" onclick="toggleF('priority','high','f-high')">▲ High priority</button>
+      <button class="fb" id="f-annual" onclick="toggleF('frequency','annual','f-annual')">Annual</button>
+      <button class="fb" id="f-event" onclick="toggleF('frequency','event-triggered','f-event')">Event-triggered</button>
+      <button class="fb" id="f-exp" onclick="toggleF('expiring','true','f-exp')">⏰ Expiring</button>
+      <div class="tr"><span class="rc" id="rc"></span><button class="expbtn" onclick="exportCSV()">↓ Export Audit</button></div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="twrap">
+      <table><thead><tr>
+        <th>ID / Section</th><th>Obligation & Evidence Needed</th><th>Category</th>
+        <th>Frequency</th><th>Deadline / Expiry</th><th>Priority</th><th>Status</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody></table>
+      <div class="empty" id="empty" style="display:none"><div class="empty-icon">◎</div><div>No matching obligations</div></div>
+    </div>
+  </div>
+
+  <!-- DETAIL PANEL -->
+  <div class="panel hidden" id="panel">
+    <div class="ph">
+      <span class="ptitle" id="pid">—</span>
+      <button class="pclose" onclick="closePanel()">✕</button>
+    </div>
+    <div class="pb" id="pbody"></div>
+  </div>
+</div>
+
+<script>
+// ═══ DATA ═══
+const ALL_OBS = [{"id":"IA-001/150623","category":"Conduct","obligation":"Ensure strict client-level segregation of advisory and distribution activities at the group or family level, preventing existing advisory clients from availing distribution services, and vice versa.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Client onboarding database, system controls, and signed client declarations.","source_section":"1.2(i)(a)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-002/150623","category":"Conduct","obligation":"Provide new clients with a clear option to choose either advisory or distribution services within the group/family at the time of onboarding.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"At the time of onboarding","evidence_required":"Onboarding forms or electronic selection record.","source_section":"1.2(i)(b)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-003/150623","category":"KYC","obligation":"Maintain and use the Permanent Account Number (PAN) of each client as the primary control record for identification and segregation of clients.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"PAN verification records and client database audit logs.","source_section":"1.2(i)(e)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-004/150623","category":"Conduct","obligation":"Reckon the family of an individual client as a single client and use the PAN of all family members jointly and severally as the control record.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Family mapping declarations and mapped PAN record database.","source_section":"1.2(i)(f)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-005/150623","category":"Conduct","obligation":"Obtain an annual declaration or periodic update from the client regarding dependent family members whose assets originate from the earning individual client.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Within each financial year","evidence_required":"Signed annual declaration form from client.","source_section":"1.2(i)(g)","priority":"medium","status":"pending","scope":"client","expiry_days":365},{"id":"IA-006/150623","category":"Conduct","obligation":"Advise direct plans (non-commission based) of products only, wherever such plans are available.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Written recommendation records and investment advice logs.","source_section":"1.2(i)(h)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-007/150623","category":"Conduct","obligation":"Obtain an annual compliance audit certificate from an auditor (for individual IA) or statutory auditor (for non-individual IA) confirming compliance with client level segregation requirements.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Within 6 months from the end of the financial year","evidence_required":"Annual compliance audit report and auditor's certificate.","source_section":"1.2(i)(i)","priority":"high","status":"pending","scope":"firm","expiry_days":365},{"id":"IA-008/150623","category":"Conduct","obligation":"Enter into a formal investment advisory agreement with clients mandatorily covering all the terms and conditions provided in Annexure A.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Prior to rendering any investment advice or charging any fees","evidence_required":"Executed Investment Advisory Agreement signed by both parties.","source_section":"1.2(ii)(a)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-009/150623","category":"Fees","obligation":"Charge fees from clients strictly under either Assets under Advice (AUA) mode (capped at 2.5% p.a. per client) or Fixed fee mode (capped at INR 1,25,000 p.a. per client).","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Fee invoices, client ledger, and advisory agreements.","source_section":"1.2(iii)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-010/150623","category":"Fees","obligation":"Demonstrate the client's Assets under Advice (AUA) using supporting documents like demat statements or unit statements of the client.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Demat statements, unit statements, and fee calculation sheets.","source_section":"1.2(iii)(A)(b)","priority":"medium","status":"pending","scope":"client","expiry_days":null},{"id":"IA-011/150623","category":"Fees","obligation":"Deduct any portion of AUA held by the client under pre-existing distribution arrangements from the total AUA for charging advisory fees.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Demat portfolio holding breakdown and advisory fee computation reports.","source_section":"1.2(iii)(A)(c)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-012/150623","category":"Fees","obligation":"Implement changes in fee modes only after a minimum period of 12 months from onboarding or the last change of fee mode.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"After 12 months of on boarding/last change of mode","evidence_required":"Client agreement addendums and billing records audit trail.","source_section":"1.2(iii)(B) General conditions (b)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-013/150623","category":"Fees","obligation":"Limit advance fee collections to a maximum of 2 quarters.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Fee receipt vouchers and bank credit advice.","source_section":"1.2(iii)(B) General conditions (c)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-014/150623","category":"Fees","obligation":"Refund the fee for the unexpired period in the event of pre-mature termination of services, retaining a maximum breakage fee of not more than one quarter's fee.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Upon pre-mature termination of agreement","evidence_required":"Refund payment proof, calculation sheet, and termination notice copy.","source_section":"1.2(iii)(B) General conditions (c)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-015/150623","category":"Qualification","obligation":"Comply with qualification and certification requirements under Regulation 7 of IA Regulations (with specific NISM certifications required for individual IAs above fifty years of age).","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"NISM certificates, educational degrees, and birth/age proof documents.","source_section":"1.2(iv)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-016/150623","category":"Registration","obligation":"An individual IA must apply for registration as a non-individual investment adviser in Form-A on or before reaching 150 clients.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"On or before reaching 150 clients","evidence_required":"Submitted Form-A application copy and fee payment receipt.","source_section":"1.2(v)(a)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-017/150623","category":"Registration","obligation":"Cease onboarding fresh clients once the client count reaches 150 until the grant of registration as a non-individual IA by SEBI.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Upon reaching 150 clients and until registration is granted","evidence_required":"Client registration logs and compliance reports.","source_section":"1.2(v)(c)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-018/150623","category":"Record Keeping","obligation":"Maintain records of interactions with clients and prospective clients where advisory conversation has taken place, including physical written records, telephone recordings, emails, and SMS.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"From first interaction until the completion of advisory services","evidence_required":"Call recording files, email archives, SMS logs, and physical records register.","source_section":"1.2(vi)(a) & (b)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-019/150623","category":"Record Keeping","obligation":"Preserve all client interaction and advisory records for a minimum period of five years (or longer if a dispute has been raised).","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"For a period of 5 years (or until dispute resolution)","evidence_required":"Archival databases, record retention policy, and storage logs.","source_section":"1.2(vi)(c)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-020/150623","category":"Conduct","obligation":"Ensure that an annual audit of compliance with IA regulations and circulars is conducted and completed.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Within six months from the end of each financial year","evidence_required":"Annual audit report issued by a chartered accountant or company secretary.","source_section":"1.2(vii)(a)","priority":"high","status":"pending","scope":"firm","expiry_days":365},{"id":"IA-021/150623","category":"Reporting","obligation":"Report the adverse findings of the annual audit and approved action taken to the respective SEBI office.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Within one month of the audit report and not later than October 31st of each year","evidence_required":"Submission acknowledgement from SEBI office.","source_section":"1.2(vii)(b)","priority":"high","status":"pending","scope":"firm","expiry_days":365},{"id":"IA-022/150623","category":"Risk Profiling","obligation":"Use the investment policy approved by the board or management team of non-individual clients to perform risk profiling and suitability analysis.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"Prior to onboarding and advising non-individual clients","evidence_required":"Risk assessment report mapping to the non-individual client's approved investment policy.","source_section":"1.2(viii)(b)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-023/150623","category":"Disclosure","obligation":"Prominently display the registered name, registration type, number, complete address, contact details of Principal Officer, and SEBI regional office address on websites, mobile apps, printed/electronic materials, KYC forms, and client agreements.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Website homepage screenshot, copies of KYC forms, and agreements.","source_section":"1.2(ix)","priority":"medium","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-024/150623","category":"Conduct","obligation":"Do not provide free trial of any products/services to prospective clients, and do not accept any part payments in advance.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Fee schedule, marketing materials, and billing records.","source_section":"2.1","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-025/150623","category":"Risk Profiling","obligation":"Provide investment advice only after completing the client's risk profile and obtaining their consent on the completed risk profile via registered email or physical document.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"Prior to rendering investment advice","evidence_required":"Risk profiling questionnaires and written/email consent records.","source_section":"2.2","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-026/150623","category":"Fees","obligation":"Accept fees strictly through banking channels (account payee crossed cheques, demand drafts, or direct credit via NEFT/RTGS/IMPS/UPI) and never accept cash deposits.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Bank statements and receipts showing compliance with acceptable modes.","source_section":"2.3","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-027/150623","category":"Disclosure","obligation":"Display the monthly update of investor complaints status on the homepage (without scrolling) of the website or mobile app in the format specified in Annexure C.","applicable_to":"Investment Adviser","frequency":"monthly","deadline":"By the 7th of the succeeding month","evidence_required":"Dated screenshot of the homepage showing the compliant complaints table.","source_section":"2.4 and 7.3","priority":"medium","status":"pending","scope":"firm","expiry_days":31},{"id":"IA-028/150623","category":"Registration","obligation":"Seek and maintain membership of the designated Investment Adviser Administration and Supervisory Body (IAASB) to keep registration in force.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Membership certificate issued by IAASB (such as BASL).","source_section":"4.6(i)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-029/150623","category":"Reporting","obligation":"Submit periodic reports to the designated IAASB as specified by them.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"As specified by the IAASB","evidence_required":"Report submission receipts and copies of submitted reports.","source_section":"4.6(iii)","priority":"medium","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-030/150623","category":"Conduct","obligation":"Ensure that critical and compliance data remains within the legal boundary of India when employing Software as a Service (SaaS) based solutions.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"SaaS service agreement and server hosting location details.","source_section":"5.3","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-031/150623","category":"Reporting","obligation":"Submit a half-yearly undertaking to SEBI confirming compliance with the advisory for SaaS-based solutions.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"Half-yearly","evidence_required":"Submitted half-yearly compliance undertaking.","source_section":"5.4 and VII(2)","priority":"medium","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-032/150623","category":"Grievance Redressal","obligation":"Display information about the grievance redressal mechanism and SCORES platform prominently in the IA's physical offices.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Photographs of the notice board inside the office premises.","source_section":"6.2","priority":"medium","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-033/150623","category":"Disclosure","obligation":"Prominently display the Investor Charter on websites and mobile applications (or send via email as a one-time measure if no website/app exists).","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Website screenshot or email transmission records of the Investor Charter.","source_section":"7.2","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-034/150623","category":"Registration","obligation":"Obtain prior approval of SEBI through the online SI Portal in case of any change in control of the Investment Adviser.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Prior to effecting any change in control","evidence_required":"SEBI approval letter/communication.","source_section":"8.1 & 8.2","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-035/150623","category":"Registration","obligation":"Submit an application for fresh registration to SEBI within six months from the date of receiving prior approval for a change in control.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Within six months of change in control approval","evidence_required":"SI Portal application confirmation receipt.","source_section":"8.2(iii)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-036/150623","category":"Disclosure","obligation":"Ensure that prior approval for all advertisements and materials is obtained from a SEBI-recognized supervisory body (such as BASL) before issue.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Prior to issuance of any advertisement","evidence_required":"Approval certificate/letter issued by BASL.","source_section":"9.1(d)(i)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-037/150623","category":"Disclosure","obligation":"Include the mandatory standard warning in legible fonts (minimum font size 10) in all advertisements: 'Investment in securities market are subject to market risks. Read all the related documents carefully before investing.'","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Copies of published advertisements and materials.","source_section":"9.1(b)(iii)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-038/150623","category":"Disclosure","obligation":"Do not include the SEBI logo in any advertisements or communication material.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Published advertisement copies and marketing materials.","source_section":"9.1(c)(xiv) & 9.2(iv)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-039/150623","category":"Record Keeping","obligation":"Retain a copy of all published advertisements for a period of five years.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"For a period of 5 years from issuance date","evidence_required":"Advertisement registers and archival records.","source_section":"9.1(d)(v)","priority":"medium","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-040/150623","category":"Conduct","obligation":"Establish internal controls to ensure employees do not encourage or circulate unverified market rumors or unauthenticated news.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Internal policy document on rumor control and training attendance logs.","source_section":"11(a) & (b)","priority":"medium","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-041/150623","category":"Conduct","obligation":"Do not outsource core business activities (such as risk profiling, suitability analysis, and providing investment advice) and compliance functions.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"SOPs, employee definitions, and third-party vendor agreements.","source_section":"12.5","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-042/150623","category":"Conduct","obligation":"Implement policies and internal procedures to identify, avoid, or manage actual or potential conflicts of interest, developed under the active involvement of senior management.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Board-approved Conflict of Interest Policy.","source_section":"14.4(a)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-043/150623","category":"KYC","obligation":"Ensure compliance with Anti-Money Laundering (AML) standards and Combating the Financing of Terrorism (CFT) as mandated under the PMLA rules.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"PMLA compliance manual, customer verification records, and audit reports.","source_section":"17","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-001/210524","category":"Conduct","obligation":"Ensure client level segregation of advisory and distribution activities at the group or family level, preventing advisory clients from receiving distribution services and vice versa.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Client database system controls, onboarding declaration records, and separate ledger audits.","source_section":"1.2(i)(a)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-002/210524","category":"Conduct","obligation":"Provide new clients with a explicit option to choose either advisory or distribution services within the group/family at the time of onboarding.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"At the time of onboarding","evidence_required":"Client selection declaration forms or electronic audit trails of onboarding choice.","source_section":"1.2(i)(b)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-003/210524","category":"KYC","obligation":"Utilize the Permanent Account Number (PAN) of each client as the unique control record for identification and segregation of client accounts.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"PAN registry and verified database of clients mapped with their segregation status.","source_section":"1.2(i)(e)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-004/210524","category":"Conduct","obligation":"Treat the family of an individual client as a single client and use the PAN of all family members jointly and severally as the control record for identification.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Family identification mapping declarations and joint PAN record logs.","source_section":"1.2(i)(f)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-005/210524","category":"Conduct","obligation":"Obtain an annual declaration or periodic update from the client regarding dependent family members whose assets originate from the earning individual client.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Within each financial year","evidence_required":"Signed annual declaration forms or updated electronic records.","source_section":"1.2(i)(g)","priority":"medium","status":"pending","scope":"client","expiry_days":365},{"id":"IA-006/210524","category":"Conduct","obligation":"Advise direct plans (non-commission based) of products only, wherever such plans are available in the market.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Investment recommendation reports and compliance system parameter configurations.","source_section":"1.2(i)(h)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-007/210524","category":"Conduct","obligation":"Obtain an annual compliance audit certificate from an auditor (for individual IA) or statutory auditor (for non-individual IA) confirming client-level segregation.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Within 6 months from the end of the financial year","evidence_required":"Annual audit report containing the compliance certificate.","source_section":"1.2(i)(i)","priority":"high","status":"pending","scope":"firm","expiry_days":365},{"id":"IA-008/210524","category":"Conduct","obligation":"Enter into a formal investment advisory agreement with clients mandatorily covering all terms and conditions specified in Annexure A.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Prior to rendering any advisory service or charging any fees","evidence_required":"Fully signed copy of the Investment Advisory Agreement.","source_section":"1.2(ii)(a)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-009/210524","category":"Fees","obligation":"Charge fees under either Assets under Advice (AUA) mode (capped at 2.5% p.a. per client) or Fixed fee mode (capped at INR 1,25,000 p.a. per client).","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Advisory agreement and invoices raised matching SEBI limits.","source_section":"1.2(iii)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-010/210524","category":"Fees","obligation":"Demonstrate the AUA figures with appropriate supporting documents such as demat statements or unit statements of the client.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Client demat and mutual fund unit statements matching the billing audit trail.","source_section":"1.2(iii)(A)(b)","priority":"medium","status":"pending","scope":"client","expiry_days":null},{"id":"IA-011/210524","category":"Fees","obligation":"Deduct assets held by the client under pre-existing distribution arrangements with any entity from the total AUA for fee calculations.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Asset distribution history logs and adjusted fee calculations.","source_section":"1.2(iii)(A)(c)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-012/210524","category":"Fees","obligation":"Ensure that the selected fee mode (AUA or Fixed) is run on an annual basis and not changed before 12 months from onboarding or last change.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"Minimum 12 months interval for fee mode change","evidence_required":"System audits tracking client agreement dates and billing parameters.","source_section":"1.2(iii)(B) General conditions (b)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-013/210524","category":"Fees","obligation":"Limit advance fee collection to a maximum of two quarters.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Receipt logs, invoices, and bank account ledgers.","source_section":"1.2(iii)(B) General conditions (c)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-014/210524","category":"Fees","obligation":"Refund the fee for the unexpired period in the event of pre-mature termination of services, retaining a maximum breakage fee of one quarter.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Upon premature termination","evidence_required":"Refund calculations, payment vouchers, and written termination records.","source_section":"1.2(iii)(B) General conditions (c)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-015/210524","category":"Qualification","obligation":"Comply with the enhanced qualification and experience requirements under Regulation 7(1) of the IA Regulations on or before the extended timeline.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"September 30, 2025","evidence_required":"Professional certificates, NISM certifications, and qualification assessment records.","source_section":"1.2(iv)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-016/210524","category":"Registration","obligation":"An individual IA must apply for registration as a non-individual investment adviser in Form-A on or before reaching 150 clients.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"On or before reaching 150 clients","evidence_required":"Submitted Form-A copy and registration application trace on SEBI SI Portal.","source_section":"1.2(v)(a)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-017/210524","category":"Registration","obligation":"Stop onboarding fresh clients once client count reaches 150, until the grant of registration as a non-individual IA by SEBI.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Immediately upon reaching 150 clients until registered","evidence_required":"Client database lists and onboarding chronological logs.","source_section":"1.2(v)(c)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-018/210524","category":"Record Keeping","obligation":"Maintain interactive conversation records with all clients and prospective clients regarding advisory service interactions (including written, email, SMS, and telephone logs).","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"From first interaction until completion of services","evidence_required":"Archived voice recordings, system-saved email databases, and physical logs.","source_section":"1.2(vi)(a) & (b)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-019/210524","category":"Record Keeping","obligation":"Retain interaction and advisory records for a minimum period of five years, keeping them longer if a regulatory dispute is open.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"For a minimum of 5 years from conversation date","evidence_required":"System backup logs, cloud archival verification, and compliance registers.","source_section":"1.2(vi)(c)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-020/210524","category":"Conduct","obligation":"Conduct an annual compliance audit of the IA operations by an external chartered accountant or company secretary.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Within six months of the end of each financial year","evidence_required":"Signed Annual Audit Report and SEBI filing records.","source_section":"1.2(vii)(a)","priority":"high","status":"pending","scope":"firm","expiry_days":365},{"id":"IA-021/210524","category":"Reporting","obligation":"Report the adverse findings of the annual compliance audit along with action taken to the respective SEBI local/regional office.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Within 1 month of audit report and no later than October 31st","evidence_required":"Filing acknowledgment receipts from SEBI.","source_section":"1.2(vii)(b)","priority":"high","status":"pending","scope":"firm","expiry_days":365},{"id":"IA-022/210524","category":"Risk Profiling","obligation":"Use the board-approved investment policy of a non-individual client to perform their risk profiling and suitability analysis.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"Prior to onboarding non-individual clients","evidence_required":"Copy of client's board-approved investment policy and matching suitability report.","source_section":"1.2(viii)(b)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-023/210524","category":"Disclosure","obligation":"Display registration numbers, address, principal officer contact, and corresponding SEBI local address prominently on websites, mobile apps, printed materials, and client communications.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Website/app screenshots, correspondence templates, and print copies.","source_section":"1.2(ix)","priority":"medium","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-024/210524","category":"Conduct","obligation":"Do not offer free trials of products/services to prospective clients, and do not accept any partial payments in advance.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Invoicing trails, standard marketing policy documents, and website checks.","source_section":"2.1","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-025/210524","category":"Risk Profiling","obligation":"Obtain consent from the client on the completed risk profile via registered email or physical document before providing advice.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"Prior to giving investment advice","evidence_required":"Signed risk profiling document or email confirmation thread on record.","source_section":"2.2","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-026/210524","category":"Fees","obligation":"Accept fee payments strictly through banking channels using account payee crossed cheques, demand drafts, or direct bank transfer, rejecting cash deposits.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Bank reconciliation records and account ledgers.","source_section":"2.3","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-027/210524","category":"Disclosure","obligation":"Prominently display the monthly update of investor complaints on the homepage (without scrolling) of websites and mobile apps using font size 12 or above.","applicable_to":"Investment Adviser","frequency":"monthly","deadline":"By the 7th of the succeeding month","evidence_required":"Dated homepage screenshot verifying the complaint table placement and size.","source_section":"2.4 and 8.3","priority":"medium","status":"pending","scope":"firm","expiry_days":31},{"id":"IA-028/210524","category":"Registration","obligation":"Acquire and maintain enlistment with the designated Stock Exchange recognized as IAASB to keep registration valid.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"Effective from July 25, 2024","evidence_required":"Active enlistment certificate or notification from IAASB.","source_section":"5.1 and 5.6","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-029/210524","category":"Reporting","obligation":"Submit periodic reports to the recognized IAASB in the format and manner specified under the operational guidelines.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"As specified by IAASB","evidence_required":"Confirmation filings and acknowledgement records from the IAASB platform.","source_section":"5.7","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-030/210524","category":"Conduct","obligation":"Ensure complete control and security of governance, risk, and compliance data by retaining critical data within the geographical boundaries of India when using SaaS systems.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"SaaS contract specifications and localization audits.","source_section":"6.3","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-031/210524","category":"Reporting","obligation":"Submit half-yearly compliance undertakings regarding the use of Software as a Service (SaaS) based solutions directly to SEBI.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"Half-yearly","evidence_required":"Submitted SaaS advisory undertaking in the specified format.","source_section":"6.4 and 21.2","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-032/210524","category":"Grievance Redressal","obligation":"Prominently display grievance redressal options including Compliance Officer details, SEBI SCORES portal link, and Online Dispute Resolution (ODR) links on platforms and in offices.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Office display photographs and website footer/contact links.","source_section":"7.2 & 7.3","priority":"medium","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-033/210524","category":"Disclosure","obligation":"Display the SEBI Investor Charter prominently on websites and mobile applications (or email to registered addresses if no active website/app is used).","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Website charter screenshots or bulk email transmission records.","source_section":"8.2","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-034/210524","category":"Registration","obligation":"Obtain SEBI's prior written approval via the SI Portal prior to executing any transition of change in control of the Investment Adviser.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Before change in control is executed","evidence_required":"Prior approval order or letter issued by SEBI.","source_section":"9.1","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-035/210524","category":"Disclosure","obligation":"Obtain mandatory approval from the recognized supervisory body (BSE Administration & Supervision Ltd.) before releasing any marketing or advertisement materials.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Prior to issuance of advertisement","evidence_required":"Approval certificate/letter issued by BASL/IAASB.","source_section":"10.1(d)(i)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-036/210524","category":"Disclosure","obligation":"Incorporate standard risk warnings in minimum 10-point font size in all advertisement communications without altering or deleting the designated wording.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Copies of published advertisements.","source_section":"10.1(b)(iii)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-037/210524","category":"Disclosure","obligation":"Do not include the SEBI logo in any advertisements, publications, or client communications.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Published advertisement and correspondence copies.","source_section":"10.1(c)(xiv) & 10.2(iv)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-038/210524","category":"Record Keeping","obligation":"Retain a hard or digital copy of all issued advertisements and BASL approvals for a period of five years.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"5 years from date of advertisement publication","evidence_required":"Compliance folders and retrieval registers.","source_section":"10.1(d)(v)","priority":"medium","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-039/210524","category":"Conduct","obligation":"Implement internal system controls and codes of conduct to ensure employees do not share unverified rumors, news, or unauthenticated information.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Employee Code of Conduct and internal monitoring logs.","source_section":"12","priority":"medium","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-040/210524","category":"Conduct","obligation":"Do not outsource core advisory functions, risk profiling, suitability determinations, and compliance-related responsibilities to third parties.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Standard operating procedures and third-party vendor agreements.","source_section":"13.5","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-041/210524","category":"Conduct","obligation":"Establish policies and procedures with active board and senior management input to identify, monitor, and prevent actual or potential conflicts of interest.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Board-approved Conflict of Interest Policy.","source_section":"15.4(i)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-042/210524","category":"KYC","obligation":"Comply with unified Know Your Client (KYC) norms as specified in the SEBI Master Circular dated October 12, 2023.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Client KYC files, verification records, and automated check parameters.","source_section":"18","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-043/210524","category":"Conduct","obligation":"Apply the simplified requirements for the grant of accreditation to investors as per SEBI guidelines.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Verification documentation, client onboarding records, and accredited investor logs.","source_section":"19","priority":"medium","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-044/210524","category":"Reporting","obligation":"Submit a standardized periodic report in the format specified in Annexure H on a half-yearly basis to the IAASB.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"For half-yearly periods ending September 30 and March 31 of every financial year","evidence_required":"Filing trace, digital receipt, and submitted Annexure H document copy.","source_section":"20.4","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-045/210524","category":"Reporting","obligation":"Ensure that the periodic reports are filed with IAASB within seven working days from the end of each half-yearly period.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"Within seven working days from the end of the half-yearly period","evidence_required":"Dated submission timestamp and digital acknowledgment from IAASB portal.","source_section":"20.6(ii)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-001/270625","category":"Conduct","obligation":"Ensure strict client-level segregation of advisory and distribution activities at the group or family level, preventing existing advisory clients from receiving distribution services and vice versa.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Client onboarding logs, separate database configurations, and signed segregation declarations.","source_section":"1(i)(a)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-002/270625","category":"Conduct","obligation":"Provide new clients with a clear option to choose either advisory or distribution services within the group/family at the time of onboarding.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"At the time of onboarding","evidence_required":"Onboarding forms or electronic audit trails of choice selection.","source_section":"1(i)(b)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-003/210524","category":"KYC","obligation":"Use the Permanent Account Number (PAN) of each client as the primary control record for identification and client-level segregation.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Verified PAN records, client profiles, and compliance database entries.","source_section":"1(i)(e)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-004/270625","category":"Conduct","obligation":"Treat the family of an individual client as a single client, using the PAN of all family members jointly and severally as the control record.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Family declarations and mapped PAN record database.","source_section":"1(i)(f)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-005/270625","category":"Conduct","obligation":"Obtain an annual declaration or periodic update from the client in respect of dependent family members whose assets originate from the earning individual client.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Within each financial year","evidence_required":"Signed annual declaration form from the client.","source_section":"1(i)(g)","priority":"medium","status":"pending","scope":"client","expiry_days":365},{"id":"IA-006/270625","category":"Conduct","obligation":"Advise direct plans (non-commission based) of products only, wherever such plans are available.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Investment recommendation records and advisory logs.","source_section":"1(i)(h)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-007/270625","category":"Conduct","obligation":"Obtain an annual compliance audit certificate from an auditor confirming compliance with client level segregation requirements.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Within 6 months from the end of the financial year","evidence_required":"Annual compliance audit report and auditor's segregation certificate.","source_section":"1(i)(i)","priority":"high","status":"pending","scope":"firm","expiry_days":365},{"id":"IA-008/270625","category":"Conduct","obligation":"Sign a standard waiver if providing investment advisory services exclusively to institutional clients and accredited investors to remain exempt from segregation requirements.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"At onboarding of exclusive institutional/accredited clients","evidence_required":"Signed standard waiver from the client on record.","source_section":"1(i)(j)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-009/270625","category":"Conduct","obligation":"Incorporate Standardized Most Important Terms and Conditions (MITC) as provided in Annexure B into the mandatory client investment advisory agreement.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Prior to rendering advice/charging fees (By June 30, 2025 for existing clients as of Feb 17, 2025)","evidence_required":"Executed agreement incorporating Annexure B MITC or email proof for existing clients.","source_section":"1(ii)(a)-(c)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-010/270625","category":"Conduct","obligation":"Obtain client consent/agreement signatures in person or via other legally acceptable modes including DigiLocker-enabled Aadhaar based e-signatures.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Prior to rendering any advice or charging any fees","evidence_required":"Digitally signed or physically signed agreement copy with timestamp audit trail.","source_section":"1(ii)(d)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-011/270625","category":"Fees","obligation":"Provide standard guidance to clients in the agreement on the optional Centralised Fee Collection Mechanism (CeFCoM).","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Prior to rendering advice/charging fees","evidence_required":"Client agreement copy showing CeFCoM guidance section.","source_section":"1(ii)(e)","priority":"medium","status":"pending","scope":"client","expiry_days":null},{"id":"IA-012/270625","category":"Fees","obligation":"Limit fees for individual and HUF clients to either Assets under Advice (AUA) mode (max 2.5% of AUA p.a. per family of client) or Fixed fee mode (max ₹ 1,51,000 p.a. per family of client).","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Client invoices, ledger, and agreement fee schedules.","source_section":"1(iii)(a)-(b)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-013/270625","category":"Fees","obligation":"Ensure that the aggregate NAV of securities under the purview of SEBI is used exclusively for charging fees under the AUA mode.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Calculations showing non-SEBI asset exclusion and demat holding sheets.","source_section":"1(iii)(g)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-014/270625","category":"Fees","obligation":"Limit advance fee collection, if agreed by the client, to a maximum of one year.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Advisory agreement and billing receipt registers.","source_section":"1(iii)(h)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-015/270625","category":"Fees","obligation":"Maintain a baseline security deposit based on previous financial year max client count: ₹ 1L (up to 150 clients), ₹ 2L (151-300), ₹ 5L (301-1000), or ₹ 10L (1001+).","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Latest by 30th April of the subsequent FY (Existing IAs comply by Sept 30, 2025)","evidence_required":"Lien letter marked in favor of IAASB with a scheduled bank.","source_section":"1(iv)(a)-(c)","priority":"high","status":"pending","scope":"client","expiry_days":365},{"id":"IA-016/270625","category":"Qualification","obligation":"Comply with revised qualification criteria for individual investment advisers, principal officers, and associated persons as relaxed by SEBI (Second Amendment) Regulations, 2024.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Educational degrees and active NISM certification credentials.","source_section":"1(v)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-017/270625","category":"Registration","obligation":"Apply for in-principle registration as a non-individual IA if client count exceeds 300 at any point of time or fee collected exceeds ₹ 3 crores during the financial year.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Whichever trigger is earlier, completing transition within 3 months of in-principle approval","evidence_required":"Submitted Form-A and in-principle approval trace on SI Portal.","source_section":"1(vi)(a)-(d)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-018/270625","category":"Conduct","obligation":"For part-time IAs, ensure that investment advisory services are clearly segregated from other businesses, and maintain arms-length relationships.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Signed arms-length undertaking, separate operations manuals.","source_section":"1(viii)(d)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-019/270625","category":"Disclosure","obligation":"For part-time IAs, provide a prominent disclaimer (minimum 10 font size) on non-SEBI service invoices indicating services are not under SEBI purview and no recourse is available.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"At time of invoicing non-SEBI services","evidence_required":"Copies of non-SEBI invoices showing mandatory disclaimer.","source_section":"1(viii)(e)","priority":"medium","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-020/270625","category":"Conduct","obligation":"A partnership firm registered as an IA, where no partner has minimum qualifications, must apply for registration as an LLP or body corporate.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Latest by September 30, 2025","evidence_required":"Registration transformation applications submitted to MCA and SEBI.","source_section":"1(ix)(b)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-021/270625","category":"Disclosure","obligation":"For products and services not under SEBI purview, make written disclosures and obtain signed client undertakings declaring no SEBI recourse is available.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"At onboarding of client (by July 31, 2025 for existing clients as of Jan 8, 2025)","evidence_required":"Signed client undertaking on record.","source_section":"1(xi)(b)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-022/270625","category":"Disclosure","obligation":"Disclose to the client the extent of use of Artificial Intelligence (AI) tools in providing investment advice at the time of entering the agreement and as required.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"At time of entering into agreement","evidence_required":"Standard client agreements containing AI disclosures.","source_section":"1(xii)(b)","priority":"medium","status":"pending","scope":"client","expiry_days":null},{"id":"IA-023/270625","category":"Record Keeping","obligation":"Maintain time-stamped call recordings of every consent for implementation/execution service obtained via telephone from advisory clients.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"Effective June 30, 2025","evidence_required":"Time-stamped audio call logs linked to client execution ledger.","source_section":"1(xiii)(B)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-024/270625","category":"Conduct","obligation":"Conduct an annual audit of compliance with SEBI Regulations and specify compliance status on each provision in the annual audit report.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Within six months from the end of each financial year","evidence_required":"Comprehensive annual compliance audit report specifying each provision.","source_section":"1(xiv)(a)-(c)","priority":"high","status":"pending","scope":"firm","expiry_days":365},{"id":"IA-025/270625","category":"Disclosure","obligation":"Publish the compliance audit status and adverse findings, if any, along with action taken on the IA website and provide the report to clients.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Starting from audit report for financial year ending March 31, 2025","evidence_required":"Website screenshots of audit reports and records of reports sent to clients.","source_section":"1(xiv)(d)-(e)","priority":"high","status":"pending","scope":"firm","expiry_days":365},{"id":"IA-026/270625","category":"Conduct","obligation":"Maintain a functional website containing details as specified by SEBI and confirm its details to IAASB.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"By June 30, 2025 for existing IAs as on Jan 8, 2025","evidence_required":"Active website domain and written confirmation receipt from IAASB.","source_section":"1(xvi)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-027/270625","category":"Disclosure","obligation":"Display updated investor complaints data on the homepage (without scrolling) of websites/mobile apps by the 7th of the succeeding month using font size 12 or above.","applicable_to":"Investment Adviser","frequency":"monthly","deadline":"By the 7th of the succeeding month","evidence_required":"Dated screenshots of the complaints table on the homepage.","source_section":"2.4 and 7.5","priority":"medium","status":"pending","scope":"firm","expiry_days":31},{"id":"IA-028/270625","category":"Disclosure","obligation":"Bring the updated SEBI Investor Charter to the notice of clients through website display, prominent office placement, and client onboarding kits.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Website charter screenshot, physical verification in offices, and copy of onboarding emails.","source_section":"7.3 & 7.4","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-029/270625","category":"Disclosure","obligation":"Ensure that any past performance or risk-return metric advertisements are verified by SEBI-recognized Past Risk and Return Verification Agency (PaRRVA).","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"Prior to publishing performance advertisements","evidence_required":"Verification report from PaRRVA and approved advertisement layouts.","source_section":"10.1(c)(xii) and 23","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-030/270625","category":"Reporting","obligation":"Submit standardized periodic reports in the format specified in Annexure H on a half-yearly basis to IAASB within 30 days from period end.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"Within 30 days of period ending Sept 30 and March 31 (March 31, 2025 extended to July 31, 2025)","evidence_required":"Filing trace and receipt from IAASB portal under Annexure H.","source_section":"27.4","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-001/060226","category":"Conduct","obligation":"Ensure client level segregation of advisory and distribution activities at the group/family level, preventing advisory clients from receiving distribution services and vice versa.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Client onboarding database, system segregation rules, and signed segregation declarations.","source_section":"1(i)(a)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-002/060226","category":"Conduct","obligation":"Provide new clients with a clear option to choose either advisory or distribution services within the group/family at the time of onboarding.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"At the time of onboarding","evidence_required":"Client onboarding selection form or digital audit log.","source_section":"1(i)(b)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-003/060226","category":"KYC","obligation":"Use the Permanent Account Number (PAN) of each client as the unique control record for identification and client-level segregation.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Verified client PAN records database.","source_section":"1(i)(e)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-004/060226","category":"Conduct","obligation":"Reckon the family of an individual client as a single client and use the PAN of all family members jointly and severally as the control record.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Family declarations and mapped PAN record system.","source_section":"1(i)(f)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-005/060226","category":"Conduct","obligation":"Obtain an annual declaration or periodic update from the client in respect of dependent family members whose assets originate from the earning individual client.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Within each financial year","evidence_required":"Signed annual declaration form from the client.","source_section":"1(i)(g)","priority":"medium","status":"pending","scope":"client","expiry_days":365},{"id":"IA-006/060226","category":"Conduct","obligation":"Advise direct plans (non-commission based) of products only, wherever such plans are available.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Investment recommendation records and advisory logs.","source_section":"1(i)(h)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-007/060226","category":"Conduct","obligation":"Obtain an annual compliance audit certificate from an auditor confirming compliance with client level segregation requirements.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Within 6 months of the end of the financial year","evidence_required":"Annual compliance audit report and auditor's segregation certificate.","source_section":"1(i)(i)","priority":"high","status":"pending","scope":"firm","expiry_days":365},{"id":"IA-008/060226","category":"Conduct","obligation":"Ensure that institutional clients and accredited investors sign a standard waiver to remain exempt from segregation requirements.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"At onboarding of exclusive institutional/accredited clients","evidence_required":"Executed standard waiver document.","source_section":"1(i)(j)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-009/060226","category":"Conduct","obligation":"Enter into an investment advisory agreement with clients incorporating the mandatory terms in Annexure A and the standardized MITC in Annexure B.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Prior to rendering advice or charging fees (By June 30, 2025 for existing clients as of Feb 17, 2025)","evidence_required":"Executed client agreement or email transmission proof for existing clients.","source_section":"1(ii)(a)-(c)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-010/060226","category":"Conduct","obligation":"Obtain client agreement signatures in person or via other legally acceptable modes including DigiLocker-enabled Aadhaar based e-signatures.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Prior to rendering any advice or charging any fees","evidence_required":"Digitally or physically signed client agreements.","source_section":"1(ii)(d)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-011/060226","category":"Fees","obligation":"Provide clear guidance to clients in the agreement on the optional Centralised Fee Collection Mechanism (CeFCoM).","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Prior to rendering advice or charging fees","evidence_required":"Advisory agreement containing CeFCoM guidance clauses.","source_section":"1(ii)(e)","priority":"medium","status":"pending","scope":"client","expiry_days":null},{"id":"IA-012/060226","category":"Fees","obligation":"Limit fees for individual and HUF clients to either Assets under Advice (AUA) mode (capped at 2.5% of AUA p.a. per family of client) or Fixed fee mode (capped at ₹ 1,51,000 p.a. per family of client).","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Client fee invoices, ledger, and agreement fee schedules.","source_section":"1(iii)(a)-(b)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-013/060226","category":"Fees","obligation":"Ensure that for second opinions on pre-existing distributed assets, the AUA fee does not exceed 2.5% p.a., and disclose and seek annual client consent regarding distributor fees.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"On an annual basis","evidence_required":"Written disclosure copy and client consent record showing distributor consideration acknowledgement.","source_section":"1(iii)(f)","priority":"high","status":"pending","scope":"client","expiry_days":365},{"id":"IA-014/060226","category":"Fees","obligation":"Limit advance fee collection to a maximum of one year.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Billing receipt logs, invoice dates, and client ledgers.","source_section":"1(iii)(h)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-015/060226","category":"Fees","obligation":"Maintain a baseline security deposit in the form of scheduled bank deposit (lien marked to IAASB) or units of liquid/overnight mutual funds based on client tiers: ₹ 1L (up to 150 clients), ₹ 2L (151-300), ₹ 5L (301-1000), or ₹ 10L (1001+).","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Revised by April 30th of subsequent financial year (Existing IAs comply by Sept 30, 2025)","evidence_required":"Bank lien letter or liquid/overnight MF unit statements marked lien to IAASB.","source_section":"1(iv)(a)-(c)","priority":"high","status":"pending","scope":"client","expiry_days":365},{"id":"IA-016/060226","category":"Qualification","obligation":"Comply with qualification and certification criteria, ensuring graduates or equivalent with NISM/accredited certs are eligible to act as IAs, or NISM PG holders renew certs within 3 years.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Degree certificates, NISM certifications, and renewal trackers.","source_section":"1(v)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-017/060226","category":"Registration","obligation":"Apply for in-principle registration as a non-individual IA if client count exceeds 300 at any point of time or financial year fees collected exceed ₹ 3 crores.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Within 3 months of reaching the threshold, completing transition within 3 months of in-principle approval","evidence_required":"In-principle application on SI Portal and registration filings.","source_section":"1(vi)(a)-(d)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-018/060226","category":"Conduct","obligation":"For part-time IAs, ensure investment advisory services are clearly segregated from other activities at all stages, and maintain arms-length relationships.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Separate operating manuals, segregation audit logs, and signed undertakings.","source_section":"1(viii)(d)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-019/060226","category":"Disclosure","obligation":"For part-time IAs, provide a prominent disclaimer (minimum 10 font size) on invoices indicating services are not under SEBI purview and no complaint can be raised to SEBI.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"At time of billing non-SEBI services","evidence_required":"Invoices showing mandatory SEBI disclaimer text.","source_section":"1(viii)(e)","priority":"medium","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-020/060226","category":"Conduct","obligation":"Ensure partnership firm IAs apply for registration as LLPs or body corporates if no partner meets minimum qualification requirements.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"Latest by September 30, 2025","evidence_required":"Registration transformation applications submitted to MCA/SEBI.","source_section":"1(ix)(b)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-021/060226","category":"Disclosure","obligation":"For products and services not under SEBI, disclose and obtain appropriate signed client undertakings declaring that no SEBI grievance recourse is available.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"At client onboarding (By July 31, 2025 for existing clients as of Jan 8, 2025)","evidence_required":"Executed standard non-SEBI product disclosure and undertaking form.","source_section":"1(xi)(b)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-022/060226","category":"Disclosure","obligation":"Disclose to the client the extent of use of Artificial Intelligence (AI) tools in providing investment advice at the time of entering the agreement and as required.","applicable_to":"Investment Adviser","frequency":"event-triggered","deadline":"At time of entering into agreement","evidence_required":"Standard client agreements containing AI disclosures.","source_section":"1(xii)(b)","priority":"medium","status":"pending","scope":"client","expiry_days":null},{"id":"IA-023/060226","category":"Record Keeping","obligation":"Maintain time-stamped call recordings of every consent for implementation/execution service obtained via telephone from advisory clients.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"Effective June 30, 2025","evidence_required":"Time-stamped audio call logs linked to client execution ledger.","source_section":"1(xiii)(B)","priority":"high","status":"pending","scope":"client","expiry_days":null},{"id":"IA-024/060226","category":"Conduct","obligation":"Conduct an annual audit of compliance with SEBI Regulations and specify compliance status on each provision in the annual audit report.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Within six months from the end of each financial year","evidence_required":"Comprehensive annual compliance audit report specifying each provision.","source_section":"1(xiv)(a)-(c)","priority":"high","status":"pending","scope":"firm","expiry_days":365},{"id":"IA-025/060226","category":"Disclosure","obligation":"Publish the compliance audit status and adverse findings, if any, along with action taken on the IA website and provide the report to clients.","applicable_to":"Investment Adviser","frequency":"annual","deadline":"Starting from audit report for financial year ending March 31, 2025","evidence_required":"Website screenshots of audit reports and records of reports sent to clients.","source_section":"1(xiv)(d)-(e)","priority":"high","status":"pending","scope":"firm","expiry_days":365},{"id":"IA-026/060226","category":"Conduct","obligation":"Maintain a functional website containing details as specified by SEBI and confirm website details to IAASB.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"By June 30, 2025 for existing IAs as on Jan 8, 2025","evidence_required":"Active website domain and written confirmation receipt from IAASB.","source_section":"1(xvi)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-027/060226","category":"Disclosure","obligation":"Display updated investor complaints data on the homepage (without scrolling) of websites/mobile apps by the 7th of the succeeding month using font size 12 or above.","applicable_to":"Investment Adviser","frequency":"monthly","deadline":"By the 7th of the succeeding month","evidence_required":"Dated screenshots of the complaints table on the homepage.","source_section":"2.4 and 7.5","priority":"medium","status":"pending","scope":"firm","expiry_days":31},{"id":"IA-028/060226","category":"Disclosure","obligation":"Bring the updated SEBI Investor Charter to the notice of clients through website display, prominent office placement, and client onboarding kits.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Website charter screenshot, physical verification in offices, and copy of onboarding emails.","source_section":"7.3 & 7.4","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-029/060226","category":"Disclosure","obligation":"Ensure that any past performance or risk-return metric advertisements are verified by SEBI-recognized Past Risk and Return Verification Agency (PaRRVA).","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"Prior to publishing performance advertisements","evidence_required":"Verification report from PaRRVA and approved advertisement layouts.","source_section":"10.1(c)(xii) and 24","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-030/060226","category":"Disclosure","obligation":"If communicating certified past performance prior to PaRRVA operationalization (on a 1-to-1 basis upon specific client request), attach the mandatory non-verification disclaimer.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"During interim period prior to PaRRVA operationalization","evidence_required":"Copies of certified performance sheets with the specified disclaimer.","source_section":"25(i)","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-031/060226","category":"Conduct","obligation":"Ensure mandatory compliance with the Rights of Persons with Disabilities Act, 2016 and its rules, specifically relating to digital accessibility guidelines of SEBI.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"ongoing","evidence_required":"Digital accessibility compliance certificate or system testing reports.","source_section":"29","priority":"high","status":"pending","scope":"firm","expiry_days":null},{"id":"IA-032/060226","category":"Reporting","obligation":"Submit standardized periodic reports in the format specified in Annexure H on a half-yearly basis to IAASB within 30 days from period end.","applicable_to":"Investment Adviser","frequency":"ongoing","deadline":"Within 30 days of period ending Sept 30 and March 31","evidence_required":"Filing trace and digital submission receipt from IAASB portal under Annexure H.","source_section":"30.4","priority":"high","status":"pending","scope":"firm","expiry_days":null}];
+
+// ═══ STATE ═══
+let tab = 'firm';
+let firmState = {}; // id -> {status, evidence:[], auditLog:[]}
+let clientState = {}; // clientId -> {id -> {status, evidence:[], auditLog:[]}}
+let clients = [{id:'c1',name:'Rahul Sharma',pan:'ABCDE1234F',onboarded:'2024-01-15'},{id:'c2',name:'Priya Investments Ltd',pan:'BCDEF2345G',onboarded:'2024-03-22'},{id:'c3',name:'Venkat & Family',pan:'CDEFG3456H',onboarded:'2025-01-08'}];
+let activeClient = null;
+let catFilter = null;
+let activeFilters = {};
+let search = '';
+let selectedId = null;
+
+// ═══ INIT ═══
+ALL_OBS.forEach(o => {
+  firmState[o.id] = {status: o.status||'pending', evidence:[], auditLog:[], evidencedAt: null};
+});
+clients.forEach(c => {
+  clientState[c.id] = {};
+  ALL_OBS.filter(o=>o.scope==='client').forEach(o=>{
+    clientState[c.id][o.id] = {status:'pending', evidence:[], auditLog:[], evidencedAt:null};
+  });
+});
+
+// ═══ HELPERS ═══
+function firmObs() { return ALL_OBS.filter(o=>o.scope==='firm'); }
+function clientObs() { return ALL_OBS.filter(o=>o.scope==='client'); }
+function currentObs() { return tab==='firm' ? firmObs() : clientObs(); }
+function getState(id) {
+  if(tab==='firm') return firmState[id];
+  if(!activeClient) return null;
+  return (clientState[activeClient]||{})[id];
+}
+function setState(id, upd) {
+  if(tab==='firm') { Object.assign(firmState[id], upd); }
+  else if(activeClient) { Object.assign(clientState[activeClient][id], upd); }
+}
+function isExpired(o, state) {
+  if(!o.expiry_days || !state?.evidencedAt) return false;
+  const exp = new Date(state.evidencedAt);
+  exp.setDate(exp.getDate() + o.expiry_days);
+  return exp < new Date();
+}
+function isExpiringSoon(o, state) {
+  if(!o.expiry_days || !state?.evidencedAt) return false;
+  const exp = new Date(state.evidencedAt);
+  exp.setDate(exp.getDate() + o.expiry_days);
+  const diff = (exp - new Date()) / 86400000;
+  return diff >= 0 && diff <= 30;
+}
+function expiryLabel(o, state) {
+  if(!o.expiry_days || !state?.evidencedAt) return '';
+  const exp = new Date(state.evidencedAt);
+  exp.setDate(exp.getDate() + o.expiry_days);
+  const diff = Math.ceil((exp - new Date()) / 86400000);
+  if(diff < 0) return `⚠ EXPIRED ${Math.abs(diff)}d ago`;
+  if(diff <= 30) return `⏰ Expires in ${diff}d`;
+  return `✓ Valid ${diff}d left`;
+}
+function computeStatus(o, state) {
+  if(!state) return 'pending';
+  if(isExpired(o, state) && state.status==='compliant') return 'gap';
+  return state.status;
+}
+
+// ═══ STATS ═══
+function updateStats() {
+  const obs = currentObs();
+  const relevantObs = tab==='client' && activeClient
+    ? obs : tab==='firm' ? obs : [];
+  const all = tab==='firm' ? obs : (activeClient ? obs : []);
+  const total = all.length;
+  let gap=0,comp=0,pend=0;
+  all.forEach(o => {
+    const st = getState(o.id);
+    const eff = computeStatus(o, st);
+    if(eff==='gap') gap++;
+    else if(eff==='compliant') comp++;
+    else pend++;
+  });
+  document.getElementById('s-scope').textContent = total;
+  document.getElementById('s-scope-lbl').textContent = tab==='firm' ? 'firm obligations' : (activeClient ? (clients.find(c=>c.id===activeClient)?.name||'') : 'select a client');
+  document.getElementById('s-gap').textContent = gap;
+  document.getElementById('s-comp').textContent = comp;
+  document.getElementById('s-pend').textContent = pend;
+  const pct = total ? Math.round((comp/total)*100) : 0;
+  document.getElementById('s-pct').textContent = pct+'%';
+  document.getElementById('s-bar').style.width = pct+'%';
+}
+
+// ═══ SIDEBAR ═══
+const CAT_COL = {Conduct:'#4f7ef8',Disclosure:'#9b7ef8',Fees:'#e8a838',Registration:'#06b6d4',Reporting:'#34c47c','Record Keeping':'#f97316',KYC:'#ec4899',Qualification:'#a3e635','Risk Profiling':'#6366f1','Grievance Redressal':'#64748b'};
+
+function buildSidebar() {
+  const obs = currentObs();
+  const cats = [...new Set(obs.map(o=>o.category))].sort();
+  let html = `<div class="sl">Views</div>
+  <div class="si active" id="sv-all" onclick="setView('all')">◈ All <span class="si-c" id="sc-all">${obs.length}</span></div>
+  <div class="si" id="sv-gap" onclick="setView('gap')">⚠ Gaps <span class="si-c" id="sc-gap">0</span></div>
+  <div class="si" id="sv-comp" onclick="setView('comp')">✓ Compliant <span class="si-c" id="sc-comp">0</span></div>
+  <div class="si" id="sv-high" onclick="setView('high')">▲ High Priority <span class="si-c">${obs.filter(o=>o.priority==='high').length}</span></div>
+  <div class="sl" style="margin-top:12px">Category</div>`;
+  cats.forEach(cat=>{
+    const n=obs.filter(o=>o.category===cat).length;
+    html+=`<div class="si" id="sv-cat-${cat.replace(/\s/g,'-')}" onclick="setCat('${cat}')"><span style="color:${CAT_COL[cat]||'#64748b'}">◆</span>${cat}<span class="si-c">${n}</span></div>`;
+  });
+  document.getElementById('sidebar').innerHTML = html;
+}
+
+let currentView = 'all';
+function setView(v) {
+  currentView = v;
+  catFilter = null;
+  document.querySelectorAll('.si[id^=sv-]').forEach(el=>el.classList.remove('active'));
+  document.getElementById('sv-'+v)?.classList.add('active');
+  renderTable();
+}
+function setCat(cat) {
+  catFilter = cat;
+  currentView = 'all';
+  document.querySelectorAll('.si[id^=sv-]').forEach(el=>el.classList.remove('active'));
+  document.getElementById('sv-cat-'+cat.replace(/\s/g,'-'))?.classList.add('active');
+  renderTable();
+}
+
+// ═══ FILTER ═══
+function getFiltered() {
+  let obs = currentObs();
+  if(tab==='client' && !activeClient) return [];
+  if(currentView==='gap') obs=obs.filter(o=>computeStatus(o,getState(o.id))==='gap');
+  else if(currentView==='comp') obs=obs.filter(o=>computeStatus(o,getState(o.id))==='compliant');
+  else if(currentView==='high') obs=obs.filter(o=>o.priority==='high');
+  if(catFilter) obs=obs.filter(o=>o.category===catFilter);
+  if(activeFilters.priority) obs=obs.filter(o=>o.priority===activeFilters.priority);
+  if(activeFilters.frequency) obs=obs.filter(o=>o.frequency===activeFilters.frequency);
+  if(activeFilters.expiring) obs=obs.filter(o=>isExpiringSoon(o,getState(o.id))||isExpired(o,getState(o.id)));
+  if(search) {
+    const q=search.toLowerCase();
+    obs=obs.filter(o=>o.obligation.toLowerCase().includes(q)||o.category.toLowerCase().includes(q)||o.id.toLowerCase().includes(q)||o.source_section.toLowerCase().includes(q)||o.evidence_required.toLowerCase().includes(q));
+  }
+  return obs;
+}
+
+function toggleF(key,val,btnId) {
+  if(activeFilters[key]===val){delete activeFilters[key];document.getElementById(btnId)?.classList.remove('on');}
+  else{activeFilters[key]=val;document.querySelectorAll('.fb').forEach(b=>{if(['f-annual','f-event'].includes(b.id)&&key==='frequency')b.classList.remove('on');if(b.id==='f-exp'&&key==='expiring')b.classList.remove('on');});document.getElementById(btnId)?.classList.add('on');}
+  renderTable();
+}
+function onSearch(q){search=q;renderTable();}
+
+// ═══ TABLE ═══
+function renderTable() {
+  updateStats();
+  const filtered = getFiltered();
+  const tbody = document.getElementById('tbody');
+  const empty = document.getElementById('empty');
+  document.getElementById('rc').textContent = filtered.length+' / '+currentObs().length;
+
+  // update sidebar counts
+  const all=currentObs();
+  let gaps=0,comps=0;
+  all.forEach(o=>{const s=computeStatus(o,getState(o.id));if(s==='gap')gaps++;else if(s==='compliant')comps++;});
+  document.getElementById('sc-all').textContent=all.length;
+  document.getElementById('sc-gap').textContent=gaps;
+  document.getElementById('sc-comp').textContent=comps;
+
+  if(tab==='client'&&!activeClient){tbody.innerHTML='';empty.style.display='block';empty.innerHTML='<div class="empty-icon">👤</div><div>Select a client above to view their compliance checklist</div>';return;}
+  if(filtered.length===0){tbody.innerHTML='';empty.style.display='block';empty.innerHTML='<div class="empty-icon">◎</div><div>No matching obligations</div>';return;}
+  empty.style.display='none';
+
+  tbody.innerHTML = filtered.map(o=>{
+    const st = getState(o.id);
+    const eff = computeStatus(o, st);
+    const expired = isExpired(o, st);
+    const expSoon = isExpiringSoon(o, st);
+    const stClass = {pending:'bpend',compliant:expired?'bexp':'bcomp',gap:'bgap',review:'brev'}[eff]||'bpend';
+    const stLabel = expired?'⏰ EXPIRED':eff==='pending'?'⏳ Pending':eff==='compliant'?'✅ Compliant':eff==='gap'?'🚨 Gap':'🔍 Review';
+    const priClass = o.priority==='high'?'bh':'bm';
+    const expLabel = expiryLabel(o, st);
+    const sel = o.id===selectedId?'sel':'';
+    return `<tr class="${sel}" onclick="openPanel('${o.id}')">
+      <td><div class="idc">${o.id}</div><div class="src">${o.source_section}</div></td>
+      <td><div class="oblc">${o.obligation.length>110?o.obligation.slice(0,110)+'…':o.obligation}<div class="evhint">📎 ${o.evidence_required.length>75?o.evidence_required.slice(0,75)+'…':o.evidence_required}</div></div></td>
+      <td><span class="catb" style="border-color:${CAT_COL[o.category]||'#333'}44;color:${CAT_COL[o.category]||'#64748b'}">${o.category}</span></td>
+      <td><div class="freqb">${o.frequency}</div></td>
+      <td><div class="dlc">${o.deadline}${expLabel?`<div class="expiry-warn">${expLabel}</div>`:''}</div></td>
+      <td><span class="b ${priClass}">${o.priority}</span></td>
+      <td><button class="stbtn" onclick="event.stopPropagation();openPanel('${o.id}')"><span class="b ${stClass}">${stLabel}</span></button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══ PANEL ═══
+function openPanel(id) {
+  selectedId = id;
+  const o = ALL_OBS.find(x=>x.id===id);
+  if(!o) return;
+  const st = getState(id);
+  if(!st) return;
+  document.getElementById('panel').classList.remove('hidden');
+  document.getElementById('pid').textContent = id;
+
+  const eff = computeStatus(o, st);
+  const expired = isExpired(o, st);
+  const expSoon = isExpiringSoon(o, st);
+  const stClass = {pending:'bpend',compliant:expired?'bexp':'bcomp',gap:'bgap',review:'brev'}[eff]||'bpend';
+
+  const expiryWarn = expired
+    ? `<div class="gap-warn">⚠ Evidence has expired. This obligation has automatically been flagged as a gap. Please re-evidence to restore compliance.</div>`
+    : expSoon ? `<div class="exp-warn">⏰ Evidence expires within 30 days. Re-evidence soon to avoid auto-gap.</div>` : '';
+
+  const gapWarn = eff==='gap' && !expired
+    ? `<div class="gap-warn">🚨 Compliance gap. No valid evidence on record. This will appear in the audit trail and may be escalated.</div>` : '';
+
+  const evItems = st.evidence.length > 0
+    ? st.evidence.map(e=>`<div class="evitem"><div class="evitem-ref">✓ ${e.ref}</div><div class="evitem-time">${e.by} · ${e.at}</div></div>`).join('')
+    : `<div style="color:var(--mut);font-size:11px">No evidence recorded yet.</div>`;
+
+  const auditItems = st.auditLog.length > 0
+    ? st.auditLog.slice(0,8).map(e=>`<div class="aentry"><div class="atime">${e.at}</div><div class="aact">${e.action}</div></div>`).join('')
+    : `<div style="color:var(--mut);font-size:11px">No changes yet.</div>`;
+
+  document.getElementById('pbody').innerHTML = `
+    <div class="pf"><label>Status</label><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="b ${stClass}">${eff}</span><span class="b ${o.priority==='high'?'bh':'bm'}">${o.priority} priority</span></div></div>
+    <div class="pf"><label>Obligation</label><p>${o.obligation}</p></div>
+    <div class="pf"><label>Category</label><p style="color:${CAT_COL[o.category]||'#64748b'}">${o.category}</p></div>
+    <div class="pf"><label>Frequency</label><p style="font-family:var(--mono)">${o.frequency}</p></div>
+    <div class="pf"><label>Deadline</label><p style="font-family:var(--mono);font-size:11px">${o.deadline}</p></div>
+    <div class="pf"><label>Source</label><p style="font-family:var(--mono)">${o.source_section}</p></div>
+    ${expiryWarn}${gapWarn}
+    <div class="pdiv"></div>
+    <div class="pf"><label>Evidence Required</label><p>${o.evidence_required}</p></div>
+    <div class="pf">
+      <label>Log Evidence</label>
+      <div class="evform">
+        <input class="evinput" id="ev-ref" placeholder="e.g. Annual audit report FY2024-25 signed by CA"/>
+        <input class="evinput" id="ev-by" placeholder="Logged by (name/role)"/>
+        <div class="evrow">
+          <button class="evsubmit" onclick="logEvidence('${id}','compliant')">✅ Mark Compliant</button>
+          <button class="evgap" onclick="logEvidence('${id}','gap')">🚨 Flag Gap</button>
+        </div>
+      </div>
+    </div>
+    <div class="pf"><label>Evidence on Record</label><div class="evlist">${evItems}</div></div>
+    <div class="pdiv"></div>
+    <div class="pf"><label>Audit Trail</label><div class="alog">${auditItems}</div></div>
+  `;
+  renderTable();
+}
+
+function logEvidence(id, newStatus) {
+  const ref = document.getElementById('ev-ref')?.value?.trim();
+  const by = document.getElementById('ev-by')?.value?.trim();
+  if(!ref) { alert('Please enter an evidence reference before marking status.'); return; }
+  const o = ALL_OBS.find(x=>x.id===id);
+  const st = getState(id);
+  if(!st) return;
+  const at = new Date().toLocaleString('en-IN');
+  const old = st.status;
+  if(newStatus==='compliant') {
+    st.evidence.push({ref, by: by||'Unknown', at});
+    st.evidencedAt = new Date().toISOString();
+  }
+  st.status = newStatus;
+  st.auditLog.unshift({at, action: `Status → ${newStatus}. Evidence: "${ref}" by ${by||'Unknown'}`});
+  if(newStatus==='gap') st.auditLog[0].action = `Flagged as gap. Reason: "${ref}" by ${by||'Unknown'}`;
+  openPanel(id);
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.add('hidden');
+  selectedId = null;
+  renderTable();
+}
+
+// ═══ CLIENT TAB ═══
+function buildClientSelector() {
+  const sel = document.getElementById('client-select');
+  sel.innerHTML = '<option value="">— select a client —</option>' +
+    clients.map(c=>`<option value="${c.id}">${c.name} · ${c.pan}</option>`).join('');
+  if(activeClient) sel.value = activeClient;
+}
+function selectClient(cid) {
+  activeClient = cid||null;
+  if(cid) {
+    const c = clients.find(x=>x.id===cid);
+    document.getElementById('client-info').textContent = `Onboarded: ${c?.onboarded||'—'}`;
+  } else {
+    document.getElementById('client-info').textContent = '';
+  }
+  catFilter=null; currentView='all'; search=''; selectedId=null;
+  document.getElementById('srch').value='';
+  document.getElementById('panel').classList.add('hidden');
+  buildSidebar();
+  renderTable();
+}
+function addClient() {
+  const name = prompt('Client name:');
+  if(!name?.trim()) return;
+  const pan = prompt('PAN number:');
+  if(!pan?.trim()) return;
+  const id = 'c'+(Date.now());
+  const today = new Date().toISOString().slice(0,10);
+  clients.push({id, name:name.trim(), pan:pan.trim().toUpperCase(), onboarded:today});
+  clientState[id] = {};
+  clientObs().forEach(o=>{ clientState[id][o.id]={status:'pending',evidence:[],auditLog:[],evidencedAt:null}; });
+  buildClientSelector();
+  document.getElementById('client-select').value = id;
+  selectClient(id);
+}
+
+// ═══ TAB SWITCH ═══
+function switchTab(t) {
+  tab = t;
+  catFilter=null; currentView='all'; search=''; activeFilters={}; selectedId=null;
+  document.getElementById('srch').value='';
+  document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('panel').classList.add('hidden');
+  document.getElementById('tab-firm').classList.toggle('active',t==='firm');
+  document.getElementById('tab-client').classList.toggle('active',t==='client');
+  document.getElementById('client-section').style.display = t==='client'?'flex':'none';
+  if(t==='client') { buildClientSelector(); }
+  buildSidebar();
+  renderTable();
+}
+
+// ═══ EXPORT ═══
+function exportCSV() {
+  const obs = currentObs();
+  const rows=[['ID','Scope','Category','Obligation','Frequency','Deadline','Priority','Status','Evidence Count','Last Action']];
+  obs.forEach(o=>{
+    const st=getState(o.id)||{};
+    rows.push([o.id,o.scope,o.category,`"${o.obligation.replace(/"/g,'""')}"`,o.frequency,`"${o.deadline}"`,o.priority,computeStatus(o,st),st.evidence?.length||0,st.auditLog?.length?`"${st.auditLog[0].action}"`:'-']);
+  });
+  const blob=new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`SEBI_IA_${tab}_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+}
+
+// ═══ CLOCK ═══
+function tick(){document.getElementById('clk').textContent=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+setInterval(tick,1000);tick();
+
+// ═══ BOOT ═══
+buildSidebar();
+renderTable();
+document.getElementById('tc-firm').textContent=firmObs().length;
+document.getElementById('tc-client').textContent=clientObs().length;
+</script>
+</body>
+</html>
