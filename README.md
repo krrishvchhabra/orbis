@@ -1,1 +1,1 @@
-# orbis
+Orbis is an AI-powered compliance operating system for SEBI-registered Investment Advisers. It reads regulatory circulars, extracts every compliance obligation automatically, and turns them into structured, trackable checklists which are split by what the firm must do and what must be done for each client.
